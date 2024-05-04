@@ -1,5 +1,30 @@
 #!/bin/bash
 
+# Function to install bc if not found
+install_bc() {
+    echo "Installing 'bc' command..."
+    if [ -x "$(command -v apt)" ]; then
+        apt update
+        apt install -y bc
+    elif [ -x "$(command -v yum)" ]; then
+        yum install -y bc
+    else
+        echo "Error: Unable to install 'bc'. Please install it manually and try again."
+        exit 1
+    fi
+}
+
+# Check if bc is installed
+if ! command -v bc &> /dev/null; then
+    install_bc
+fi
+
+# Check again if bc is installed
+if ! command -v bc &> /dev/null; then
+    echo "Error: 'bc' command not found. Please install it and try again."
+    exit 1
+fi
+
 # Get CPU usage
 cpu_usage=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}')
 
@@ -28,8 +53,8 @@ uptime=$(uptime -p)
 # Get system information
 system_info=$(uname -a)
 
-# Get running services
-services=$(service --status-all)
+# Get average CPU usage today
+avg_cpu_today=$(sar -u | awk '{print $8}' | tail -n +3 | awk '{sum += $1} END {print sum/NR}')
 
 # Print the collected information
 echo "VPS Information:"
@@ -41,5 +66,6 @@ echo "Network Usage (RX): $rx_speed KB/s"
 echo "Network Usage (TX): $tx_speed KB/s"
 echo "Uptime: $uptime"
 echo "System Info: $system_info"
+echo "Average CPU Usage Today: $avg_cpu_today %"
 echo "Running Services:"
-echo "$services"
+service --status-all
