@@ -1,32 +1,39 @@
 #!/bin/bash
 
-# Function to install bc if not found
-install_bc() {
-    echo "Installing 'bc' command..."
+# Function to install necessary packages if not found
+install_packages() {
+    echo "Installing necessary packages..."
     if [ -x "$(command -v apt)" ]; then
         apt update
-        apt install -y bc
+        apt install -y bc sysstat
     elif [ -x "$(command -v yum)" ]; then
-        yum install -y bc
+        yum install -y bc sysstat
     else
-        echo "Error: Unable to install 'bc'. Please install it manually and try again."
+        echo "Error: Unable to install necessary packages. Please install them manually and try again."
         exit 1
     fi
 }
 
-# Check if bc is installed
-if ! command -v bc &> /dev/null; then
-    install_bc
+# Check if required packages are installed
+if ! command -v bc &> /dev/null || ! command -v sar &> /dev/null; then
+    install_packages
 fi
 
-# Check again if bc is installed
-if ! command -v bc &> /dev/null; then
-    echo "Error: 'bc' command not found. Please install it and try again."
+# Check again if required packages are installed
+if ! command -v bc &> /dev/null || ! command -v sar &> /dev/null; then
+    echo "Error: Required packages are not installed. Please install them and try again."
     exit 1
 fi
 
+# Function to print colored text
+print_color() {
+    color=$1
+    text=$2
+    echo -e "\e[${color}m${text}\e[0m"
+}
+
 # Get CPU usage
-avg_cpu_today=$(sar -u | awk 'NR > 3 { sum += $8 } END { printf "%.2f", sum / NR }')
+avg_cpu_today=$(sar -u | awk 'NR > 3 { sum += $8 } END { if (NR > 0) printf "%.2f", sum / NR else print "0" }')
 
 # Get memory usage
 mem_total=$(free -m | awk 'NR==2{print $2}')
@@ -55,14 +62,14 @@ uptime=$(uptime -p)
 system_info=$(uname -a)
 
 # Print the collected information
-echo "VPS Information:"
-echo "--------------"
-echo "Average CPU Usage Today: $avg_cpu_today %"
-echo "Memory Usage: $mem_usage % ($mem_used MB / $mem_total MB)"
-echo "Disk Usage: $disk_usage % ($disk_used used out of $disk_total)"
-echo "Network Usage (RX): $rx_speed KB/s"
-echo "Network Usage (TX): $tx_speed KB/s"
-echo "Uptime: $uptime"
-echo "System Info: $system_info"
-echo "Running Services:"
+print_color "32" "VPS Information:"
+print_color "34" "--------------"
+print_color "33" "Average CPU Usage Today: ${avg_cpu_today}%"
+print_color "33" "Memory Usage: ${mem_usage}% (${mem_used} MB / ${mem_total} MB)"
+print_color "33" "Disk Usage: ${disk_usage}% (${disk_used} used out of ${disk_total})"
+print_color "33" "Network Usage (RX): ${rx_speed} KB/s"
+print_color "33" "Network Usage (TX): ${tx_speed} KB/s"
+print_color "33" "Uptime: ${uptime}"
+print_color "33" "System Info: ${system_info}"
+print_color "33" "Running Services:"
 service --status-all
