@@ -26,7 +26,7 @@ if ! command -v bc &> /dev/null; then
 fi
 
 # Get CPU usage
-cpu_usage=$(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1}')
+avg_cpu_today=$(sar -u | awk 'NR > 3 { sum += $8 } END { printf "%.2f", sum / NR }')
 
 # Get memory usage
 mem_total=$(free -m | awk 'NR==2{print $2}')
@@ -34,8 +34,9 @@ mem_used=$(free -m | awk 'NR==2{print $3}')
 mem_usage=$(echo "scale=2; $mem_used / $mem_total * 100" | bc -l)
 
 # Get disk usage
-disk_total=$(df -h | grep '/dev/vda1' | awk '{print $2}')
-disk_used=$(df -h | grep '/dev/vda1' | awk '{print $3}')
+disk_info=$(df -h | grep '/dev/vda1')
+disk_total=$(echo "$disk_info" | awk '{print $2}')
+disk_used=$(echo "$disk_info" | awk '{print $3}')
 disk_usage=$(echo "scale=2; $disk_used / $disk_total * 100" | bc -l)
 
 # Get network usage
@@ -53,19 +54,15 @@ uptime=$(uptime -p)
 # Get system information
 system_info=$(uname -a)
 
-# Get average CPU usage today
-avg_cpu_today=$(sar -u | awk '{print $8}' | tail -n +3 | awk '{sum += $1} END {print sum/NR}')
-
 # Print the collected information
 echo "VPS Information:"
 echo "--------------"
-echo "CPU Usage: $cpu_usage %"
+echo "Average CPU Usage Today: $avg_cpu_today %"
 echo "Memory Usage: $mem_usage % ($mem_used MB / $mem_total MB)"
 echo "Disk Usage: $disk_usage % ($disk_used used out of $disk_total)"
 echo "Network Usage (RX): $rx_speed KB/s"
 echo "Network Usage (TX): $tx_speed KB/s"
 echo "Uptime: $uptime"
 echo "System Info: $system_info"
-echo "Average CPU Usage Today: $avg_cpu_today %"
 echo "Running Services:"
 service --status-all
