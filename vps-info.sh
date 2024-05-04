@@ -12,12 +12,15 @@ mem_usage=$(echo "scale=2; $mem_used / $mem_total * 100" | bc -l)
 # Get disk usage
 disk_usage=$(df -h --output=pcent / | sed 1d | tr -d ' %')
 
+# Get network interface
+network_interface=$(ip route get 1 | awk 'NR==1{print $(NF-2)}')
+
 # Get network usage
-rx_speed=$(cat /sys/class/net/eth0/statistics/rx_bytes)
-tx_speed=$(cat /sys/class/net/eth0/statistics/tx_bytes)
+rx_speed=$(cat /sys/class/net/"$network_interface"/statistics/rx_bytes)
+tx_speed=$(cat /sys/class/net/"$network_interface"/statistics/tx_bytes)
 sleep 1
-rx_speed_new=$(cat /sys/class/net/eth0/statistics/rx_bytes)
-tx_speed_new=$(cat /sys/class/net/eth0/statistics/tx_bytes)
+rx_speed_new=$(cat /sys/class/net/"$network_interface"/statistics/rx_bytes)
+tx_speed_new=$(cat /sys/class/net/"$network_interface"/statistics/tx_bytes)
 rx_speed=$(( ($rx_speed_new - $rx_speed) / 1024 ))
 tx_speed=$(( ($tx_speed_new - $tx_speed) / 1024 ))
 
