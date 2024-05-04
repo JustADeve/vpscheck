@@ -5,11 +5,9 @@ avg_cpu_today=$(top -bn1 | awk '/^%Cpu/{print 100-$8}')
 
 # Get memory usage
 mem_total=$(awk '/MemTotal/{print $2}' /proc/meminfo)
-mem_used=$(awk '/MemFree/{print $2}' /proc/meminfo)
-mem_cached=$(awk '/^Cached:/{print $2}' /proc/meminfo)
-mem_buffered=$(awk '/Buffers/{print $2}' /proc/meminfo)
-mem_free=$((mem_used + mem_cached + mem_buffered))
-mem_usage=$(echo "scale=2; ($mem_total - $mem_free) / $mem_total * 100" | bc -l)
+mem_free=$(awk '/MemAvailable/{print $2}' /proc/meminfo)
+mem_used=$((mem_total - mem_free))
+mem_usage=$(echo "scale=2; $mem_used / $mem_total * 100" | bc -l)
 
 # Get disk usage
 disk_usage=$(df -h --output=pcent / | sed 1d | tr -d ' %')
