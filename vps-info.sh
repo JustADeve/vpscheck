@@ -29,8 +29,7 @@ fi
 max_cpu_usage=0
 
 # Get CPU usage
-while IFS=" " read -r cpu_user cpu_nice cpu_sys cpu_idle cpu_wait cpu_irq cpu_sr cpu_steal cpu_guest cpu_guest_nice
-do
+while IFS=" " read -r cpu_user cpu_nice cpu_sys cpu_idle cpu_wait cpu_irq cpu_sr cpu_steal cpu_guest cpu_guest_nice; do
     cpu_usage=$((100 - cpu_idle))
     if (( cpu_usage > max_cpu_usage )); then
         max_cpu_usage=$cpu_usage
@@ -47,7 +46,7 @@ mem_usage=$(echo "scale=2; $mem_used / $mem_total * 100" | bc -l)
 disk_usage=$(df -h --output=pcent / | sed 1d | tr -d ' %')
 
 # Get network usage
-network_stats=$(iftop -t -s 1 2>/dev/null | awk '/=>/{print $2, $4}')
+network_stats=$(iftop -t -s 1 2>/dev/null | grep -oP '(?<==> )[0-9.]+' | awk 'NR%2{rx=$0;next} {print rx, $0}')
 rx_speed=$(echo "$network_stats" | awk '{rx+=$1} END{print rx/1024}')
 tx_speed=$(echo "$network_stats" | awk '{tx+=$2} END{print tx/1024}')
 
