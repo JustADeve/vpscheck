@@ -49,8 +49,8 @@ disk_usage=$(df -h --output=pcent / | sed 1d | tr -d ' %')
 
 # Get network usage
 network_stats=$(netstat -i | awk 'NR>2 {rx+=$3; tx+=$7} END{print rx/1024, tx/1024}')
-rx_speed=$(echo "$network_stats" | awk '{print $1}')
-tx_speed=$(echo "$network_stats" | awk '{print $2}')
+rx_speed=$(echo "$network_stats" | awk '{print int($1)}')
+tx_speed=$(echo "$network_stats" | awk '{print int($2)}')
 
 # Get uptime
 uptime=$(uptime -p)
