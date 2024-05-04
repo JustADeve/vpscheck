@@ -25,13 +25,6 @@ if ! command -v bc &> /dev/null || ! command -v sar &> /dev/null; then
     exit 1
 fi
 
-# Function to print colored text
-print_color() {
-    color=$1
-    text=$2
-    echo -e "\e[${color}m${text}\e[0m"
-}
-
 # Get CPU usage
 avg_cpu_today=$(sar -u | awk 'NR > 3 { sum += $8 } END { if (NR > 0) printf "%.2f", sum / NR else print "0" }')
 
@@ -62,14 +55,14 @@ uptime=$(uptime -p)
 system_info=$(uname -a)
 
 # Print the collected information
-print_color "32" "VPS Information:"
-print_color "34" "--------------"
-print_color "33" "Average CPU Usage Today: ${avg_cpu_today}%"
-print_color "33" "Memory Usage: ${mem_usage}% (${mem_used} MB / ${mem_total} MB)"
-print_color "33" "Disk Usage: ${disk_usage}% (${disk_used} used out of ${disk_total})"
-print_color "33" "Network Usage (RX): ${rx_speed} KB/s"
-print_color "33" "Network Usage (TX): ${tx_speed} KB/s"
-print_color "33" "Uptime: ${uptime}"
-print_color "33" "System Info: ${system_info}"
-print_color "33" "Running Services:"
+echo "VPS Information:"
+echo "--------------"
+echo "Average CPU Usage Today: ${avg_cpu_today}%"
+echo "Memory Usage: ${mem_usage}% (${mem_used} MB / ${mem_total} MB)"
+echo "Disk Usage: ${disk_usage}% (${disk_used} used out of ${disk_total})"
+echo "Network Usage (RX): ${rx_speed} KB/s"
+echo "Network Usage (TX): ${tx_speed} KB/s"
+echo "Uptime: ${uptime}"
+echo "System Info: ${system_info}"
+echo "Running Services:"
 service --status-all
